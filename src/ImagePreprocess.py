@@ -1,0 +1,1 @@
+#ImagePreprocess.py: preprocessing input image for HTR
