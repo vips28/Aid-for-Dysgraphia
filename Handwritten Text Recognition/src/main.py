@@ -9,12 +9,15 @@ from DataLoaderIAM import DataLoaderIAM, Batch
 from Model import Model, DecoderType
 from SamplePreprocessor import preprocess
 
+from WordSegmentation import wordSegmentation, prepareImg
+import os
+
 
 class FilePaths:
     "filenames and paths to data"
     fnCharList = '../model/charList.txt'
     fnSummary = '../model/summary.json'
-    fnInfer = '../data/test.png'
+    fnInfer = '../data/pg.JPG'
     fnCorpus = '../data/corpus.txt'
 
 
@@ -99,13 +102,39 @@ def validate(model, loader):
     return charErrorRate, wordAccuracy
 
 
+def fetchforinfer(pathimg):
+    img = prepareImg(cv2.imread(pathimg), 50)
+    res = wordSegmentation(img, kernelSize=25, sigma=11, theta=7, minArea=100)
+    if not os.path.exists(pathimg):
+            os.mkdir(pathimg)
+    resret=[]
+    for i in res:
+        (wordBox, wordImg) = i
+        resret.append(wordImg)
+    return resret
+
 def infer(model, fnImg):
     "recognize text in image provided by file path"
-    img = preprocess(cv2.imread(fnImg, cv2.IMREAD_GRAYSCALE), Model.imgSize)
-    batch = Batch(None, [img])
+
+    outF = open("../data/recog.txt", "w")
+
+    #img = preprocess(cv2.imread(fnImg, cv2.IMREAD_GRAYSCALE), Model.imgSize)
+    #img2= preprocess(cv2.imread("../data/2.png", cv2.IMREAD_GRAYSCALE), Model.imgSize)
+
+    images=fetchforinfer(fnImg)
+    for (i,j) in enumerate(images):
+        images[i]=preprocess(j,Model.imgSize)
+    batch = Batch(None, images)
     (recognized, probability) = model.inferBatch(batch, True)
-    print(f'Recognized: "{recognized[0]}"')
-    print(f'Probability: {probability[0]}')
+
+    for i in range(len(recognized)):
+        outF.write(recognized[i])
+        outF.write(" ")
+        print("Recognized:",recognized[i]," ; Probability:",probability[i])
+    outF.close()
+
+    #print(f'Recognized: "{recognized[0]}","{recognized[1]}"')
+    #print(f'Probability: {probability[0]},{probability[1]}')
 
 
 def main():
@@ -156,3 +185,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
