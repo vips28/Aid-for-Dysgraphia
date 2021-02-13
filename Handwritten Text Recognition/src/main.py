@@ -12,12 +12,13 @@ from SamplePreprocessor import preprocess
 from WordSegmentation import wordSegmentation, prepareImg
 import os
 
+from Spelling import spelling
 
 class FilePaths:
     "filenames and paths to data"
     fnCharList = '../model/charList.txt'
     fnSummary = '../model/summary.json'
-    fnInfer = '../data/pg.JPG'
+    fnInfer = '../data/trail.jpg'
     fnCorpus = '../data/corpus.txt'
 
 
@@ -133,6 +134,14 @@ def infer(model, fnImg):
         print("Recognized:",recognized[i]," ; Probability:",probability[i])
     outF.close()
 
+    s=spelling()
+    s.correct()
+    corrected=s.punct()
+    print(corrected[0])
+    #outF1 = open("../data/corrected.txt", "w+")
+    #outF1.write(corrected[0])
+    #outF1.close()
+
     #print(f'Recognized: "{recognized[0]}","{recognized[1]}"')
     #print(f'Probability: {probability[0]},{probability[1]}')
 
@@ -185,4 +194,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
