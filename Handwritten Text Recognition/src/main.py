@@ -9,7 +9,7 @@ from DataLoaderIAM import DataLoaderIAM, Batch
 from Model import Model, DecoderType
 from SamplePreprocessor import preprocess
 
-from WordSegmentation import wordSegmentation, prepareImg
+from infer import wordsegmentation
 import os
 
 from Spelling import spelling
@@ -18,7 +18,7 @@ class FilePaths:
     "filenames and paths to data"
     fnCharList = '../model/charList.txt'
     fnSummary = '../model/summary.json'
-    fnInfer = '../data/trail.jpg'
+    fnInfer = '../data'
     fnCorpus = '../data/corpus.txt'
 
 
@@ -104,15 +104,9 @@ def validate(model, loader):
 
 
 def fetchforinfer(pathimg):
-    img = prepareImg(cv2.imread(pathimg), 50)
-    res = wordSegmentation(img, kernelSize=25, sigma=11, theta=7, minArea=100)
-    if not os.path.exists(pathimg):
-            os.mkdir(pathimg)
-    resret=[]
-    for i in res:
-        (wordBox, wordImg) = i
-        resret.append(wordImg)
-    return resret
+    imgs=wordsegmentation()
+    return imgs.segment(pathimg)
+    
 
 def infer(model, fnImg):
     "recognize text in image provided by file path"
@@ -122,16 +116,19 @@ def infer(model, fnImg):
     #img = preprocess(cv2.imread(fnImg, cv2.IMREAD_GRAYSCALE), Model.imgSize)
     #img2= preprocess(cv2.imread("../data/2.png", cv2.IMREAD_GRAYSCALE), Model.imgSize)
 
-    images=fetchforinfer(fnImg)
-    for (i,j) in enumerate(images):
-        images[i]=preprocess(j,Model.imgSize)
-    batch = Batch(None, images)
-    (recognized, probability) = model.inferBatch(batch, True)
+    pagewiselist=fetchforinfer(fnImg)
+    for pages in range(len(pagewiselist))
+        for (i,j) in enumerate(images):
+            images[i]=preprocess(j,Model.imgSize)
+        batch = Batch(None, images)
+        (recognized, probability) = model.inferBatch(batch, True)
 
-    for i in range(len(recognized)):
-        outF.write(recognized[i])
-        outF.write(" ")
-        print("Recognized:",recognized[i]," ; Probability:",probability[i])
+        for i in range(len(recognized)):
+            outF.write(recognized[i])
+            outF.write(" ")
+            print("Recognized:",recognized[i]," ; Probability:",probability[i])
+        outF.write('\n')
+    
     outF.close()
 
     s=spelling()
