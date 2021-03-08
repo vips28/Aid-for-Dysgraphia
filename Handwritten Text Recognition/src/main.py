@@ -9,7 +9,7 @@ from DataLoaderIAM import DataLoaderIAM, Batch
 from Model import Model, DecoderType
 from SamplePreprocessor import preprocess
 
-from infer import wordsegmentation
+from infer import segment
 import os
 
 from Spelling import spelling
@@ -104,8 +104,7 @@ def validate(model, loader):
 
 
 def fetchforinfer(pathimg):
-    imgs=wordsegmentation()
-    return imgs.segment(pathimg)
+    return segment(pathimg)
     
 
 def infer(model, fnImg):
@@ -117,10 +116,12 @@ def infer(model, fnImg):
     #img2= preprocess(cv2.imread("../data/2.png", cv2.IMREAD_GRAYSCALE), Model.imgSize)
 
     pagewiselist=fetchforinfer(fnImg)
-    for pages in range(len(pagewiselist))
-        for (i,j) in enumerate(images):
-            images[i]=preprocess(j,Model.imgSize)
-        batch = Batch(None, images)
+    print(len(pagewiselist))
+    print(type(pagewiselist[0]))
+    for pagesin in range(len(pagewiselist)):
+        for (i,j) in enumerate(pagewiselist[pagesin]):
+            pagewiselist[pagesin][i]=preprocess(j,Model.imgSize)
+        batch = Batch(None, pagewiselist[pagesin])
         (recognized, probability) = model.inferBatch(batch, True)
 
         for i in range(len(recognized)):
